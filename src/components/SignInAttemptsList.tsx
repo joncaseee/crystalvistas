@@ -79,9 +79,9 @@ const SignInAttemptsList: React.FC<SignInAttemptsListProps> = ({ attempts }) => 
     <div className="mt-4 md:mt-8">
       <h2 className="text-xl md:text-2xl font-bold mb-4">Sign-in Attempts</h2>
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-300 text-sm md:text-base">
+        <table className="min-w-full bg-white text-gr border border-gray-300 text-sm md:text-base">
           <thead>
-            <tr className="bg-gray-100">
+            <tr className="bg-gray-100 text-gray-800">
               <th className="py-2 px-2 md:px-4 border-b">Name</th>
               <th className="py-2 px-2 md:px-4 border-b">Email</th>
               <th className="py-2 px-2 md:px-4 border-b hidden md:table-cell">Provider</th>
@@ -92,7 +92,7 @@ const SignInAttemptsList: React.FC<SignInAttemptsListProps> = ({ attempts }) => 
           </thead>
           <tbody>
             {attempts.map((attempt) => (
-              <tr key={attempt.uid} className="hover:bg-gray-50">
+              <tr key={attempt.uid} className="hover:bg-gray-50 bg-white text-gray-800">
                 <td className="py-2 px-2 md:px-4 border-b">{attempt.displayName || 'N/A'}</td>
                 <td className="py-2 px-2 md:px-4 border-b">{attempt.email}</td>
                 <td className="py-2 px-2 md:px-4 border-b hidden md:table-cell">{attempt.providerId}</td>
@@ -101,13 +101,13 @@ const SignInAttemptsList: React.FC<SignInAttemptsListProps> = ({ attempts }) => 
                 <td className="py-2 px-2 md:px-4 border-b">
                   <button
                     onClick={() => toggleEmployeeApproval(attempt)}
-                    className="focus:outline-none"
+                    className="focus:outline-none bg-slate-100"
                     title={approvedEmployees.has(attempt.uid) ? "Disable employee" : "Approve employee"}
                   >
                     {approvedEmployees.has(attempt.uid) ? (
-                      <ToggleRight size={24} className="text-green-500" />
+                      <ToggleRight size={24} className="bg-slate-100 text-green-500" />
                     ) : (
-                      <ToggleLeft size={24} className="text-gray-400" />
+                      <ToggleLeft size={24} className="bg-slate-100 text-gray-400" />
                     )}
                   </button>
                 </td>

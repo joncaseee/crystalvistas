@@ -72,7 +72,7 @@ const ViewJobs: React.FC<ViewJobsProps> = ({ isOpen, onClose }) => {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-gray-200">
+              <tr className="bg-slate-300 text-gray-800">
                 <th className="border p-2">Date</th>
                 <th className="border p-2">Job ID</th>
                 <th className="border p-2">Net Profit</th>
@@ -84,7 +84,7 @@ const ViewJobs: React.FC<ViewJobsProps> = ({ isOpen, onClose }) => {
               {jobs.map((job) => (
                 <tr
                   key={job.id}
-                  className="hover:bg-gray-100 cursor-pointer"
+                  className="hover:bg-slate-100 bg-slate-200 text-gray-800 cursor-pointer"
                   onClick={() => setSelectedJob(job)}
                 >
                   <td className="border p-2">{formatDate(job.date)}</td>

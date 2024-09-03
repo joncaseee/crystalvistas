@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../firebase';
 import { Job } from '../types/Job';
 import { generateNextJobId } from '../utils/jobIdGenerator';
+import { Upload } from 'lucide-react';
 
 interface NewJobProps {
   isOpen: boolean;
@@ -20,6 +22,7 @@ const NewJob: React.FC<NewJobProps> = ({ isOpen, onClose }) => {
     paymentMethod: 'cash',
   });
   const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -48,6 +51,41 @@ const NewJob: React.FC<NewJobProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setJob(prev => ({
+      ...prev,
+      [name]: name === 'netProfit' || name === 'expenses' || name === 'mileage' ? parseFloat(value) : value
+    }));
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    setUploading(true);
+    setError(null);
+
+    const newReceipts = [...job.receipts];
+
+    for (let i = 0; i < files.length && newReceipts.length < 4; i++) {
+      const file = files[i];
+      const storageRef = ref(storage, `receipts/${job.jobId}_${Date.now()}_${file.name}`);
+
+      try {
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        newReceipts.push(downloadURL);
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        setError('Failed to upload one or more files. Please try again.');
+      }
+    }
+
+    setJob({ ...job, receipts: newReceipts });
+    setUploading(false);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -61,20 +99,21 @@ const NewJob: React.FC<NewJobProps> = ({ isOpen, onClose }) => {
             <input
               type="date"
               id="date"
+              name="date"
               value={job.date}
-              onChange={(e) => setJob({ ...job, date: e.target.value })}
+              onChange={handleInputChange}
               className="w-full p-2 bg-zinc-600 text-gray-200 border rounded"
               required
             />
           </div>
           <div className="mb-4">
-            <label htmlFor="jobId" className="block mb-2 text-gray-200">Job ID</label>
+            <label htmlFor="jobId" className="block mb-2">Job ID</label>
             <input
               type="text"
               id="jobId"
               value={job.jobId}
               readOnly
-              className="w-full p-2 border rounded bg-gray-100"
+              className="w-full p-2 border rounded"
             />
           </div>
           <div className="mb-4">
@@ -82,8 +121,9 @@ const NewJob: React.FC<NewJobProps> = ({ isOpen, onClose }) => {
             <input
               type="number"
               id="netProfit"
+              name="netProfit"
               value={job.netProfit}
-              onChange={(e) => setJob({ ...job, netProfit: parseFloat(e.target.value) })}
+              onChange={handleInputChange}
               className="w-full p-2 bg-zinc-600 text-gray-200 border rounded"
               required
             />
@@ -93,8 +133,9 @@ const NewJob: React.FC<NewJobProps> = ({ isOpen, onClose }) => {
             <input
               type="number"
               id="expenses"
+              name="expenses"
               value={job.expenses}
-              onChange={(e) => setJob({ ...job, expenses: parseFloat(e.target.value) })}
+              onChange={handleInputChange}
               className="w-full p-2 bg-zinc-600 text-gray-200 border rounded"
               required
             />
@@ -104,8 +145,9 @@ const NewJob: React.FC<NewJobProps> = ({ isOpen, onClose }) => {
             <input
               type="number"
               id="mileage"
+              name="mileage"
               value={job.mileage}
-              onChange={(e) => setJob({ ...job, mileage: parseFloat(e.target.value) })}
+              onChange={handleInputChange}
               className="w-full p-2 bg-zinc-600 text-gray-200 border rounded"
               required
             />
@@ -114,8 +156,9 @@ const NewJob: React.FC<NewJobProps> = ({ isOpen, onClose }) => {
             <label htmlFor="paymentMethod" className="block mb-2 text-gray-200">Payment Method</label>
             <select
               id="paymentMethod"
+              name="paymentMethod"
               value={job.paymentMethod}
-              onChange={(e) => setJob({ ...job, paymentMethod: e.target.value as Job['paymentMethod'] })}
+              onChange={handleInputChange}
               className="w-full p-2 bg-zinc-600 text-gray-200 border rounded"
               required
             >
@@ -125,8 +168,28 @@ const NewJob: React.FC<NewJobProps> = ({ isOpen, onClose }) => {
               <option value="other">Other</option>
             </select>
           </div>
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded mr-2">
-            Add Job
+          <div className="mb-4">
+            <label htmlFor="receipts" className="block mb-2 text-gray-200">Upload Receipts (Max 4)</label>
+            <div className="flex items-center">
+              <label htmlFor="receipts" className="cursor-pointer bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition duration-300">
+                <Upload size={24} />
+              </label>
+              <input
+                type="file"
+                id="receipts"
+                accept="image/*"
+                multiple
+                onChange={handleFileUpload}
+                className="hidden"
+                disabled={uploading || job.receipts.length >= 4}
+              />
+              <span className="ml-2 text-gray-200">
+                {job.receipts.length} / 4 receipts uploaded
+              </span>
+            </div>
+          </div>
+          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded mr-2" disabled={uploading}>
+            {uploading ? 'Uploading...' : 'Add Job'}
           </button>
           <button type="button" onClick={onClose} className="bg-gray-500 text-white px-4 py-2 rounded">
             Cancel

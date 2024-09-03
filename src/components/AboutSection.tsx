@@ -46,7 +46,7 @@ const AboutSection: React.FC = () => {
             >
               <Info size={64} />
             </motion.div>
-            <h2 className="text-3xl font-bold mb-4 text-center md:text-left">About CrystalVistas</h2>
+            <h2 className="text-3xl text-gray-800 font-bold mb-4 text-center md:text-left">About CrystalVistas</h2>
             <p className="text-gray-700 text-center md:text-left">
               At CrystalVistas, we're passionate about delivering crystal-clear results for your windows. With years of experience and a dedication to customer satisfaction, we've become the go-to window cleaning service for homes and businesses alike.
             </p>

@@ -32,7 +32,7 @@ const NavBar: React.FC = () => {
     <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <Link to="/" className="text-2xl font-bold text-blue-600"><span className='font-light'>Crystal</span><span className='font-medium'>Vistas</span></Link>
+          <Link to="/" className="text-2xl font-light text-blue-600"><span className='font-bold'>Crystal</span><span className='font-medium'>Vistas</span></Link>
           <div className="hidden md:flex items-center space-x-6">
             <Link to="/" className="text-gray-600 hover:text-blue-600 transition duration-300">Home</Link>
             <Link to="/about" className="text-gray-600 hover:text-blue-600 transition duration-300">About Us</Link>

@@ -3,10 +3,10 @@ import ServicesSection from '../components/ServicesSection';
 
 const Services: React.FC = () => {
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 bg-gray-100">
       
       <ServicesSection />
-      <div className="mt-12 mb-8 mx-auto max-w-96">
+      <div className="mt-12 mb-8 mx-auto max-w-96 bg-gray-100 text-gray-800">
         <h2 className="text-2xl font-bold mb-4">Why Choose Crystal Vistas?</h2>
         <ul className="list-disc list-inside text-gray-700 text-left ml-12">
           <li>Experienced and professional team</li>
