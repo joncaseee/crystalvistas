@@ -31,6 +31,10 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, onClose, onEdit, onDelete 
     setIsEditing(false);
   };
 
+
+
+
+  
   const handleCancel = () => {
     setEditedJob(job);
     setIsEditing(false);
