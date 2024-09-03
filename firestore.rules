@@ -2,6 +2,39 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper function to check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if the user is an approved employee
+    function isApprovedEmployee() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/employees/$(request.auth.uid));
+    }
+
+    // Rules for the quoteRequests collection
+    match /quoteRequests/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Rules for the signInAttempts collection
+    match /signInAttempts/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Rules for the employees collection
+    match /employees/{employeeId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isApprovedEmployee();
+    }
+
+    // Rules for the jobs collection
+    match /jobs/{jobId} {
+      allow read, write: if isApprovedEmployee();
+    }
+
+    // Default rule to deny access to all other collections
     match /{document=**} {
       allow read, write: if false;
     }
