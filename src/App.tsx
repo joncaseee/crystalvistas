@@ -9,6 +9,7 @@ import Contact from './pages/Contact'
 import GetQuote from './pages/GetQuote'
 import EmployeeLogin from './pages/EmployeeLogin'
 import EmployeeDashboard from './pages/EmployeeDashboard'
+import Reviews from './pages/Reviews'
 import './App.css'
 
 function ScrollToTop() {
@@ -25,7 +26,7 @@ function AppContent() {
   return (
     <div className="App flex flex-col min-h-screen">
       <NavBar />
-      <div className="flex-grow pt-16"> {/* Add padding to account for fixed navbar */}
+      <div className="flex-grow pt-16">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -34,6 +35,7 @@ function AppContent() {
           <Route path="/get-quote" element={<GetQuote />} />
           <Route path="/employee-login" element={<EmployeeLogin />} />
           <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
+          <Route path="/reviews" element={<Reviews />} />
         </Routes>
       </div>
       <Footer />

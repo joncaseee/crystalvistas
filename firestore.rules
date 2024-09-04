@@ -34,6 +34,12 @@ service cloud.firestore {
       allow read, write: if isApprovedEmployee();
     }
 
+    // Rules for the reviews collection
+    match /reviews/{reviewId} {
+      allow read: if isApprovedEmployee();
+      allow create: if true; // Anyone can create a review
+    }
+
     // Default rule to deny access to all other collections
     match /{document=**} {
       allow read, write: if false;

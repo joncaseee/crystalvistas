@@ -8,6 +8,8 @@ import QuoteRequestGraph from '../components/QuoteRequestGraph';
 import ViewJobs from '../components/ViewJobs';
 import NewJob from '../components/NewJob';
 import IncomeGraph from '../components/IncomeGraph';
+import ReviewsModal from '../components/ReviewsModal';
+import AverageRating from '../components/AverageRating';
 
 interface SignInAttempt {
   uid: string;
@@ -23,6 +25,7 @@ const EmployeeDashboard: React.FC = () => {
   const [signInAttempts, setSignInAttempts] = useState<SignInAttempt[]>([]);
   const [isViewJobsOpen, setIsViewJobsOpen] = useState(false);
   const [isNewJobOpen, setIsNewJobOpen] = useState(false);
+  const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
   const [isEmployee, setIsEmployee] = useState(false);
   const navigate = useNavigate();
 
@@ -65,6 +68,11 @@ const EmployeeDashboard: React.FC = () => {
     }
   };
 
+  const getReviewLink = () => {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/reviews`;
+  };
+
   if (!user || !isEmployee) {
     return <div>Loading...</div>;
   }
@@ -75,7 +83,7 @@ const EmployeeDashboard: React.FC = () => {
       <div className="max-w-full md:max-w-4xl mx-auto">
         <p className="mb-2 md:mb-4 text-lg">Hello, {user.displayName || user.email}!</p>
         <p className="mb-4 md:mb-6 text-sm md:text-base">Welcome to the Employee Dashboard.</p>
-        <div className="mb-8 flex justify-center space-x-4">
+        <div className="mb-8 flex flex-wrap justify-center gap-4">
           <button
             onClick={() => setIsViewJobsOpen(true)}
             className="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:shadow-outline"
@@ -88,6 +96,18 @@ const EmployeeDashboard: React.FC = () => {
           >
             New Job
           </button>
+        </div>
+        <AverageRating onClick={() => setIsReviewsModalOpen(true)} />
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-2">Review Link</h2>
+          <p className="mb-2">Share this link with customers to collect reviews:</p>
+          <input
+            type="text"
+            value={getReviewLink()}
+            readOnly
+            className="w-full p-2 border rounded"
+            onClick={(e) => (e.target as HTMLInputElement).select()}
+          />
         </div>
         <div className="mb-8">
           <IncomeGraph />
@@ -107,6 +127,7 @@ const EmployeeDashboard: React.FC = () => {
       </div>
       <ViewJobs isOpen={isViewJobsOpen} onClose={() => setIsViewJobsOpen(false)} />
       <NewJob isOpen={isNewJobOpen} onClose={() => setIsNewJobOpen(false)} />
+      <ReviewsModal isOpen={isReviewsModalOpen} onClose={() => setIsReviewsModalOpen(false)} />
     </div>
   );
 };

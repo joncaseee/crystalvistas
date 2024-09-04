@@ -138,23 +138,23 @@ const SignInAttemptsList: React.FC<SignInAttemptsListProps> = ({ attempts }) => 
                 <td className="py-2 px-2 md:px-4 border-b">
                   <button
                     onClick={() => toggleEmployeeApproval(attempt)}
-                    className="focus:outline-none bg-slate-100"
+                    className="focus:outline-none bg-white"
                     title={approvedEmployees.has(attempt.uid) ? "Disable employee" : "Approve employee"}
                   >
                     {approvedEmployees.has(attempt.uid) ? (
-                      <ToggleRight size={24} className="bg-slate-100 text-green-500" />
+                      <ToggleRight size={24} className=" text-green-500" />
                     ) : (
-                      <ToggleLeft size={24} className="bg-slate-100 text-gray-400" />
+                      <ToggleLeft size={24} className=" text-gray-400" />
                     )}
                   </button>
                 </td>
                 <td className="py-2 px-2 md:px-4 border-b">
                   <button
                     onClick={() => deleteAccount(attempt)}
-                    className="focus:outline-none bg-slate-100 ml-2"
+                    className="focus:outline-none  ml-2 bg-white"
                     title="Delete account"
                   >
-                    <Trash2 size={24} className="bg-slate-100 text-red-500" />
+                    <Trash2 size={24} className=" text-red-500" />
                   </button>
                 </td>
               </tr>
