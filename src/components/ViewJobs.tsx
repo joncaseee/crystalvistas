@@ -26,6 +26,16 @@ const ViewJobs: React.FC<ViewJobsProps> = ({ isOpen, onClose }) => {
             console.warn('Invalid job data:', jobData);
           }
         });
+        
+        // Sort jobs by job ID in descending order
+        jobsData.sort((a, b) => {
+          const aId = a.jobId.toLowerCase();
+          const bId = b.jobId.toLowerCase();
+          if (aId < bId) return 1;
+          if (aId > bId) return -1;
+          return 0;
+        });
+        
         setJobs(jobsData);
       });
 

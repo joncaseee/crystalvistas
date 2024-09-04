@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { User } from 'firebase/auth';
-import { collection, query, onSnapshot } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import SignInAttemptsList from '../components/SignInAttemptsList';
 import QuoteRequestGraph from '../components/QuoteRequestGraph';
 import ViewJobs from '../components/ViewJobs';
@@ -23,12 +23,16 @@ const EmployeeDashboard: React.FC = () => {
   const [signInAttempts, setSignInAttempts] = useState<SignInAttempt[]>([]);
   const [isViewJobsOpen, setIsViewJobsOpen] = useState(false);
   const [isNewJobOpen, setIsNewJobOpen] = useState(false);
+  const [isEmployee, setIsEmployee] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
+        const employeeRef = doc(db, 'employees', currentUser.uid);
+        const employeeSnap = await getDoc(employeeRef);
+        setIsEmployee(employeeSnap.exists());
       } else {
         navigate('/employee-login');
       }
@@ -38,7 +42,7 @@ const EmployeeDashboard: React.FC = () => {
   }, [navigate]);
 
   useEffect(() => {
-    if (user) {
+    if (user && isEmployee) {
       const q = query(collection(db, 'signInAttempts'));
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const attempts: SignInAttempt[] = [];
@@ -50,7 +54,7 @@ const EmployeeDashboard: React.FC = () => {
 
       return () => unsubscribe();
     }
-  }, [user]);
+  }, [user, isEmployee]);
 
   const handleSignOut = async () => {
     try {
@@ -61,7 +65,7 @@ const EmployeeDashboard: React.FC = () => {
     }
   };
 
-  if (!user) {
+  if (!user || !isEmployee) {
     return <div>Loading...</div>;
   }
 

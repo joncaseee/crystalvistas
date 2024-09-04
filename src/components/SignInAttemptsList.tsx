@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ToggleLeft, ToggleRight } from 'lucide-react';
+import { ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 
@@ -59,7 +59,7 @@ const SignInAttemptsList: React.FC<SignInAttemptsListProps> = ({ attempts }) => 
           newSet.delete(attempt.uid);
           return newSet;
         });
-        alert(`Employee ${attempt.displayName || attempt.email} has been disabled.`);
+        console.log(`Employee ${attempt.displayName || attempt.email} has been disabled.`);
       } else {
         await setDoc(employeeRef, {
           email: attempt.email,
@@ -67,11 +67,47 @@ const SignInAttemptsList: React.FC<SignInAttemptsListProps> = ({ attempts }) => 
           approvedAt: new Date(),
         });
         setApprovedEmployees(prev => new Set(prev).add(attempt.uid));
-        alert(`Employee ${attempt.displayName || attempt.email} has been approved.`);
+        console.log(`Employee ${attempt.displayName || attempt.email} has been approved.`);
       }
     } catch (error) {
       console.error('Error toggling employee approval:', error);
       alert(error instanceof Error ? error.message : 'Failed to toggle employee approval. Please try again.');
+    }
+  };
+
+  const deleteAccount = async (attempt: SignInAttempt) => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        throw new Error('No user is currently signed in');
+      }
+
+      const currentEmployeeRef = doc(db, 'employees', currentUser.uid);
+      const currentEmployeeDoc = await getDoc(currentEmployeeRef);
+
+      if (!currentEmployeeDoc.exists()) {
+        throw new Error('You are not authorized to manage employees');
+      }
+
+      // Delete from 'employees' collection if it exists
+      const employeeRef = doc(db, 'employees', attempt.uid);
+      await deleteDoc(employeeRef);
+
+      // Delete from 'signInAttempts' collection
+      const signInAttemptRef = doc(db, 'signInAttempts', attempt.uid);
+      await deleteDoc(signInAttemptRef);
+
+      setApprovedEmployees(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(attempt.uid);
+        return newSet;
+      });
+
+      console.log(`Account for ${attempt.displayName || attempt.email} has been deleted.`);
+      alert(`Account for ${attempt.displayName || attempt.email} has been deleted.`);
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      alert(error instanceof Error ? error.message : 'Failed to delete account. Please try again.');
     }
   };
 
@@ -88,6 +124,7 @@ const SignInAttemptsList: React.FC<SignInAttemptsListProps> = ({ attempts }) => 
               <th className="py-2 px-2 md:px-4 border-b hidden md:table-cell">Created On</th>
               <th className="py-2 px-2 md:px-4 border-b hidden md:table-cell">Last Sign In</th>
               <th className="py-2 px-2 md:px-4 border-b">Status</th>
+              <th className="py-2 px-2 md:px-4 border-b">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -109,6 +146,15 @@ const SignInAttemptsList: React.FC<SignInAttemptsListProps> = ({ attempts }) => 
                     ) : (
                       <ToggleLeft size={24} className="bg-slate-100 text-gray-400" />
                     )}
+                  </button>
+                </td>
+                <td className="py-2 px-2 md:px-4 border-b">
+                  <button
+                    onClick={() => deleteAccount(attempt)}
+                    className="focus:outline-none bg-slate-100 ml-2"
+                    title="Delete account"
+                  >
+                    <Trash2 size={24} className="bg-slate-100 text-red-500" />
                   </button>
                 </td>
               </tr>

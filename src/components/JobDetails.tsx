@@ -80,7 +80,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, onClose, onEdit, onDelete 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center overflow-y-auto">
-      <div className="bg-white text-gray-800 p-8 rounded-lg shadow-lg max-w-2xl w-full m-4">
+      <div className="bg-white bg-opacity-80 text-gray-800 p-8 rounded-lg shadow-lg max-w-2xl w-full m-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-gray-800">Job Details</h2>
           <div>
