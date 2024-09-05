@@ -10,6 +10,9 @@ import NewJob from '../components/NewJob';
 import IncomeGraph from '../components/IncomeGraph';
 import ReviewsModal from '../components/ReviewsModal';
 import AverageRating from '../components/AverageRating';
+import AddExpenseModal from '../components/AddExpenseModal';
+import ViewExpensesModal from '../components/ViewExpensesModal';
+import { SquarePlus, FilePlus, Briefcase, ReceiptText } from 'lucide-react';
 
 interface SignInAttempt {
   uid: string;
@@ -26,6 +29,8 @@ const EmployeeDashboard: React.FC = () => {
   const [isViewJobsOpen, setIsViewJobsOpen] = useState(false);
   const [isNewJobOpen, setIsNewJobOpen] = useState(false);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [isViewExpensesOpen, setIsViewExpensesOpen] = useState(false);
   const [isEmployee, setIsEmployee] = useState(false);
   const navigate = useNavigate();
 
@@ -78,23 +83,35 @@ const EmployeeDashboard: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-1 p-4">
       <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-8 text-center">Employee Dashboard</h1>
       <div className="max-w-full md:max-w-4xl mx-auto">
         <p className="mb-2 md:mb-4 text-lg">Hello, {user.displayName || user.email}!</p>
         <p className="mb-4 md:mb-6 text-sm md:text-base">Welcome to the Employee Dashboard.</p>
-        <div className="mb-8 flex flex-wrap justify-center gap-4">
+        <div className="mb-8 flex flex-wrap justify-center gap-10">
           <button
             onClick={() => setIsViewJobsOpen(true)}
             className="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:shadow-outline"
           >
-            View Jobs
+            <Briefcase size={20} />
           </button>
           <button
             onClick={() => setIsNewJobOpen(true)}
             className="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 focus:outline-none focus:shadow-outline"
           >
-            New Job
+            <SquarePlus size={20} />
+          </button>
+          <button
+            onClick={() => setIsAddExpenseOpen(true)}
+            className="bg-yellow-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-yellow-600 focus:outline-none focus:shadow-outline"
+          >
+            <FilePlus size={20} />
+          </button>
+          <button
+            onClick={() => setIsViewExpensesOpen(true)}
+            className="bg-purple-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-600 focus:outline-none focus:shadow-outline"
+          >
+            <ReceiptText size={20} />
           </button>
         </div>
         <AverageRating onClick={() => setIsReviewsModalOpen(true)} />
@@ -128,6 +145,8 @@ const EmployeeDashboard: React.FC = () => {
       <ViewJobs isOpen={isViewJobsOpen} onClose={() => setIsViewJobsOpen(false)} />
       <NewJob isOpen={isNewJobOpen} onClose={() => setIsNewJobOpen(false)} />
       <ReviewsModal isOpen={isReviewsModalOpen} onClose={() => setIsReviewsModalOpen(false)} />
+      <AddExpenseModal isOpen={isAddExpenseOpen} onClose={() => setIsAddExpenseOpen(false)} />
+      <ViewExpensesModal isOpen={isViewExpensesOpen} onClose={() => setIsViewExpensesOpen(false)} />
     </div>
   );
 };

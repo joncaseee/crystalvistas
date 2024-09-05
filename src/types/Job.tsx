@@ -2,11 +2,14 @@
 
 export interface Job {
   id: string;
-  date: string;
   jobId: string;
+  date: string;
+  customerName: string;
+  customerNumber: string;
+  customerEmail: string;
+  customerAddress: string;
   netProfit: number;
-  expenses: number;
   mileage: number;
-  receipts: string[];
   paymentMethod: 'cash' | 'check' | 'card' | 'other';
+  notes: string;
 }

@@ -40,6 +40,11 @@ service cloud.firestore {
       allow create: if true; // Anyone can create a review
     }
 
+    // Rules for the expenses collection
+    match /expenses/{expenseId} {
+      allow read, write: if isApprovedEmployee();
+    }
+
     // Default rule to deny access to all other collections
     match /{document=**} {
       allow read, write: if false;

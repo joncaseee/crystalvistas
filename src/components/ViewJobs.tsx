@@ -20,7 +20,7 @@ const ViewJobs: React.FC<ViewJobsProps> = ({ isOpen, onClose }) => {
         const jobsData: Job[] = [];
         querySnapshot.forEach((doc) => {
           const jobData = doc.data() as Omit<Job, 'id'>;
-          if (typeof jobData.netProfit === 'number' && typeof jobData.expenses === 'number') {
+          if (typeof jobData.netProfit === 'number') {
             jobsData.push({ id: doc.id, ...jobData } as Job);
           } else {
             console.warn('Invalid job data:', jobData);
@@ -69,9 +69,7 @@ const ViewJobs: React.FC<ViewJobsProps> = ({ isOpen, onClose }) => {
     return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' });
   };
 
-  const calculateGrossIncome = (netProfit: number, expenses: number) => {
-    return netProfit - expenses;
-  };
+ 
 
   if (!isOpen) return null;
 
@@ -85,8 +83,7 @@ const ViewJobs: React.FC<ViewJobsProps> = ({ isOpen, onClose }) => {
               <tr className="bg-slate-300 text-gray-800">
                 <th className="border p-2">Date</th>
                 <th className="border p-2">Job ID</th>
-                <th className="border p-2">Net Profit</th>
-                <th className="border p-2">Expenses</th>
+                <th className="border p-2">Customer Name</th>
                 <th className="border p-2">Gross Income</th>
               </tr>
             </thead>
@@ -99,9 +96,9 @@ const ViewJobs: React.FC<ViewJobsProps> = ({ isOpen, onClose }) => {
                 >
                   <td className="border p-2">{formatDate(job.date)}</td>
                   <td className="border p-2">{job.jobId}</td>
+                  <td className="border p-2">{job.customerName}</td>
                   <td className="border p-2">${job.netProfit.toFixed(2)}</td>
-                  <td className="border p-2">${job.expenses.toFixed(2)}</td>
-                  <td className="border p-2">${calculateGrossIncome(job.netProfit, job.expenses).toFixed(2)}</td>
+                  
                 </tr>
               ))}
             </tbody>

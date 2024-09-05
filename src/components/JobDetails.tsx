@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Job } from '../types/Job';
-import { Settings, Trash2, Save, X, Upload } from 'lucide-react';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { storage } from '../firebase';
+import { Settings, Trash2, Save, X } from 'lucide-react';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 interface JobDetailsProps {
   job: Job;
@@ -14,68 +14,42 @@ interface JobDetailsProps {
 const JobDetails: React.FC<JobDetailsProps> = ({ job, onClose, onEdit, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedJob, setEditedJob] = useState<Job>(job);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const grossProfit = useMemo(() => {
-    return editedJob.netProfit - editedJob.expenses;
-  }, [editedJob.netProfit, editedJob.expenses]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setEditedJob(prev => ({
       ...prev,
-      [name]: name === 'netProfit' || name === 'expenses' || name === 'mileage' ? parseFloat(value) : value
+      [name]: name === 'netProfit' || name === 'mileage' ? parseFloat(value) : value
     }));
   };
 
-  const handleSave = () => {
-    onEdit(editedJob);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setEditedJob(job);
-    setIsEditing(false);
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    setUploading(true);
-    setError(null);
-
-    const newReceipts = [...editedJob.receipts];
-
-    for (let i = 0; i < files.length && newReceipts.length < 4; i++) {
-      const file = files[i];
-      const storageRef = ref(storage, `receipts/${editedJob.jobId}_${Date.now()}_${file.name}`);
-
-      try {
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        newReceipts.push(downloadURL);
-      } catch (error) {
-        console.error('Error uploading file:', error);
-        setError('Failed to upload one or more files. Please try again.');
-      }
-    }
-
-    setEditedJob({ ...editedJob, receipts: newReceipts });
-    setUploading(false);
-  };
-
-  const handleDeleteReceipt = async (url: string) => {
+  const handleSave = async () => {
     try {
-      const storageRef = ref(storage, url);
-      await deleteObject(storageRef);
-      const newReceipts = editedJob.receipts.filter(receipt => receipt !== url);
-      setEditedJob({ ...editedJob, receipts: newReceipts });
+      const jobRef = doc(db, 'jobs', job.id);
+      
+      // Create a new object with the structure Firestore expects
+      const updatedJobData = {
+        jobId: editedJob.jobId,
+        date: editedJob.date,
+        customerName: editedJob.customerName,
+        customerNumber: editedJob.customerNumber,
+        customerEmail: editedJob.customerEmail,
+        netProfit: editedJob.netProfit,
+        mileage: editedJob.mileage,
+        paymentMethod: editedJob.paymentMethod,
+        notes: editedJob.notes,
+      };
+
+      await updateDoc(jobRef, updatedJobData);
+      onEdit(editedJob);
+      setIsEditing(false);
     } catch (error) {
-      console.error('Error deleting receipt:', error);
-      setError('Failed to delete receipt. Please try again.');
+      console.error('Error updating job: ', error);
     }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString();
   };
 
   return (
@@ -87,7 +61,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, onClose, onEdit, onDelete 
             {isEditing ? (
               <>
                 <button
-                  onClick={handleCancel}
+                  onClick={() => setIsEditing(false)}
                   className="mr-2 p-2 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition-colors"
                   title="Cancel"
                 >
@@ -133,12 +107,54 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, onClose, onEdit, onDelete 
                 className="w-full p-2 bg-gray-200 text-gray-800 border rounded"
               />
             ) : (
-              <p>{new Date(job.date).toLocaleDateString()}</p>
+              <p>{formatDate(job.date)}</p>
             )}
           </div>
           <div>
             <label className="block text-gray-700 font-bold mb-2">Job ID</label>
             <p>{job.jobId}</p>
+          </div>
+          <div>
+            <label className="block text-gray-700 font-bold mb-2">Customer Name</label>
+            {isEditing ? (
+              <input
+                type="text"
+                name="customerName"
+                value={editedJob.customerName}
+                onChange={handleInputChange}
+                className="w-full p-2 bg-gray-200 text-gray-800 border rounded"
+              />
+            ) : (
+              <p>{job.customerName}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-gray-700 font-bold mb-2">Customer Number</label>
+            {isEditing ? (
+              <input
+                type="tel"
+                name="customerNumber"
+                value={editedJob.customerNumber}
+                onChange={handleInputChange}
+                className="w-full p-2 bg-gray-200 text-gray-800 border rounded"
+              />
+            ) : (
+              <p>{job.customerNumber}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-gray-700 font-bold mb-2">Customer Email</label>
+            {isEditing ? (
+              <input
+                type="email"
+                name="customerEmail"
+                value={editedJob.customerEmail}
+                onChange={handleInputChange}
+                className="w-full p-2 bg-gray-200 text-gray-800 border rounded"
+              />
+            ) : (
+              <p>{job.customerEmail}</p>
+            )}
           </div>
           <div>
             <label className="block text-gray-700 font-bold mb-2">Net Profit</label>
@@ -153,24 +169,6 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, onClose, onEdit, onDelete 
             ) : (
               <p>${job.netProfit.toFixed(2)}</p>
             )}
-          </div>
-          <div>
-            <label className="block text-gray-700 font-bold mb-2">Expenses</label>
-            {isEditing ? (
-              <input
-                type="number"
-                name="expenses"
-                value={editedJob.expenses}
-                onChange={handleInputChange}
-                className="w-full p-2 bg-gray-200 text-gray-800 border rounded"
-              />
-            ) : (
-              <p>${job.expenses.toFixed(2)}</p>
-            )}
-          </div>
-          <div>
-            <label className="block text-gray-700 font-bold mb-2">Gross Profit</label>
-            <p className="font-semibold text-green-600">${grossProfit.toFixed(2)}</p>
           </div>
           <div>
             <label className="block text-gray-700 font-bold mb-2">Mileage</label>
@@ -206,39 +204,18 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, onClose, onEdit, onDelete 
           </div>
         </div>
         <div className="mt-4">
-          <label className="block text-gray-700 font-bold mb-2">Receipts</label>
-          <div className="flex flex-wrap gap-2">
-            {editedJob.receipts.map((receipt, index) => (
-              <div key={index} className="relative">
-                <img src={receipt} alt={`Receipt ${index + 1}`} className="w-20 h-20 object-cover rounded" />
-                {isEditing && (
-                  <button
-                    onClick={() => handleDeleteReceipt(receipt)}
-                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-                    title="Delete Receipt"
-                  >
-                    <X size={12} />
-                  </button>
-                )}
-              </div>
-            ))}
-            {isEditing && editedJob.receipts.length < 4 && (
-              <label htmlFor="receipts" className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded cursor-pointer">
-                <Upload size={24} />
-                <input
-                  type="file"
-                  id="receipts"
-                  accept="image/*"
-                  multiple
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  disabled={uploading}
-                />
-              </label>
-            )}
-          </div>
-          {uploading && <p className="text-blue-500 mt-2">Uploading...</p>}
-          {error && <p className="text-red-500 mt-2">{error}</p>}
+          <label className="block text-gray-700 font-bold mb-2">Notes</label>
+          {isEditing ? (
+            <textarea
+              name="notes"
+              value={editedJob.notes}
+              onChange={handleInputChange}
+              className="w-full p-2 bg-gray-200 text-gray-800 border rounded"
+              rows={4}
+            />
+          ) : (
+            <p>{job.notes}</p>
+          )}
         </div>
         <div className="mt-6 flex justify-end">
           <button
