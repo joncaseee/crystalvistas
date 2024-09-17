@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -9,10 +9,22 @@ const Reviews: React.FC = () => {
   const [name, setName] = useState<string>('');
   const [message, setMessage] = useState<string>('');
   const [showFeedbackBox, setShowFeedbackBox] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitMessage, setSubmitMessage] = useState<string>('');
+  const [showGoogleButton, setShowGoogleButton] = useState<boolean>(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSubmitMessage('');
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [submitMessage]);
 
   const handleStarClick = (selectedRating: number) => {
     setRating(selectedRating);
     setShowFeedbackBox(selectedRating <= 3);
+    setShowGoogleButton(false);
     if (selectedRating > 3) {
       setName('');
       setMessage('');
@@ -22,15 +34,15 @@ const Reviews: React.FC = () => {
   const sendEmailNotification = async (reviewData: any) => {
     try {
       await emailjs.send(
-        'service_e76nl4k', // Replace with your EmailJS service ID
-        'template_zon9yhx', // Replace with your new template ID for review notifications
+        'service_e76nl4k',
+        'template_zon9yhx',
         {
           rating: reviewData.rating,
           name: reviewData.name || 'Anonymous',
           message: reviewData.message || 'Submitted on Google or Left Blank',
           date: new Date().toLocaleString(),
         },
-        'dbyeQyaM7JBfpZP36' // Replace with your EmailJS user ID
+        'dbyeQyaM7JBfpZP36'
       );
       console.log('Email notification sent successfully');
     } catch (error) {
@@ -42,9 +54,11 @@ const Reviews: React.FC = () => {
     e.preventDefault();
     
     if (rating === 0) {
-      alert('Please select a star rating before submitting.');
+      setSubmitMessage('Please select a star rating before submitting.');
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       const reviewData = {
@@ -60,22 +74,30 @@ const Reviews: React.FC = () => {
       // Send email notification
       await sendEmailNotification(reviewData);
 
-      if (rating >= 4) {
-        // Redirect to Google review page
-        window.open('https://g.page/r/CZk_Gv-YiNZsEBM/review', '_blank');
+      if (rating <= 3) {
+        setSubmitMessage('Thank you for your feedback. We appreciate your input and will use it to improve our services.');
+        // Reset form for 1-3 star ratings
+        setRating(0);
+        setName('');
+        setMessage('');
+        setShowFeedbackBox(false);
       } else {
-        alert('Thank you for your feedback. We appreciate your input and will use it to improve our services.');
+        setSubmitMessage('Thank you for your positive review! Please click the button below to submit your review on Google.');
+        setShowGoogleButton(true);
       }
-
-      // Reset form
-      setRating(0);
-      setName('');
-      setMessage('');
-      setShowFeedbackBox(false);
     } catch (error) {
       console.error('Error submitting review:', error);
-      alert('An error occurred while submitting your review. Please try again.');
+      setSubmitMessage('An error occurred while submitting your review. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const handleGoogleReview = () => {
+    window.open('https://g.page/r/CQqDzwR7TWBFEBM/review', '_blank', 'noopener,noreferrer');
+    // Reset form after opening Google review page
+    setRating(0);
+    setShowGoogleButton(false);
   };
 
   return (
@@ -131,16 +153,33 @@ const Reviews: React.FC = () => {
         )}
 
         <div className="flex items-center justify-center">
-          <button
-            type="submit"
-            className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${
-              rating === 0 ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-            disabled={rating === 0}
-          >
-            {rating >= 4 ? 'Submit on Google' : 'Submit Feedback'}
-          </button>
+          {!showGoogleButton && (
+            <button
+              type="submit"
+              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${
+                rating === 0 || isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              disabled={rating === 0 || isSubmitting}
+            >
+              {isSubmitting ? 'Submitting...' : rating <= 3 ? 'Submit Feedback' : 'Submit Review'}
+            </button>
+          )}
+          {showGoogleButton && (
+            <button
+              type="button"
+              onClick={handleGoogleReview}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              Submit on Google
+            </button>
+          )}
         </div>
+
+        {submitMessage && (
+          <div className={`mt-4 text-center ${submitMessage.includes('Thank you') ? 'text-green-600' : 'text-red-600'}`}>
+            {submitMessage}
+          </div>
+        )}
       </form>
     </div>
   );
